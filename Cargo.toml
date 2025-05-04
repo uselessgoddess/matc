@@ -1,0 +1,12 @@
+[package]
+name = "matc"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ordered-float = { version = "4.0", default-features = false }
+indicatif = "0.17"
+rand = "0.9"
+
+[dev-dependencies]
+criterion = "0.5"
