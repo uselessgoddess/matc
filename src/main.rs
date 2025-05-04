@@ -2,7 +2,7 @@
 
 use {
   matc::{Mat, fx, gauss, jacobi},
-  std::iter,
+  std::{io, io::Write, iter, time::Instant},
 };
 
 mod random {
@@ -59,7 +59,7 @@ fn diff(a: &[fx], b: &[fx], eps: fx) {
 }
 
 fn test(size: usize) {
-  let eps = 0.0001;
+  let eps = 0.001;
 
   let x: Vec<fx> = (0..size).map(|_| rand::random_range(-10.0..10.0)).collect();
   let a = loop {
@@ -71,7 +71,7 @@ fn test(size: usize) {
   };
   let b = a.mul_vec(&x);
 
-  let js = jacobi(&a, &b, eps, 1024);
+  let js = jacobi(&a, &b, eps / 100.0, 128);
   let Some(s) = gauss(a, b.clone()) else { unreachable!() };
 
   diff(&s, &x, eps);
@@ -82,8 +82,27 @@ fn test(size: usize) {
 
 use indicatif::ProgressIterator;
 
-fn main() {
-  for _ in (0..1024).progress() {
-    test(100);
+fn partial(size: usize, rate: usize) {
+  for _ in (0..rate / size).progress() {
+    test(size);
   }
+}
+
+fn measure(load: impl FnOnce()) {
+  let instant = Instant::now();
+  load(); // TODO: add spinner 
+  println!("{:?}", instant.elapsed());
+}
+
+fn main() {
+  let rate = 5000;
+
+  for size in [1, 3, 10, 100, 500] {
+    measure(|| partial(size, rate));
+  }
+
+  print!("super test(5000): ");
+  let _ = io::stdout().flush();
+
+  measure(|| test(5000));
 }
